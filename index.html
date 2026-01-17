@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Testimonials</title>
+  
+  <!-- CSP: Allow testimonial script to load -->
+  <meta http-equiv="Content-Security-Policy" 
+        content="script-src 'self' 'unsafe-inline' https://testimonial-frontend-soz6.vercel.app; 
+                 connect-src 'self' https://testimonial-frontend-soz6.vercel.app;">
+
+  <!-- Basic styling -->
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f8fafc;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    p.subtitle {
+      text-align: center;
+      font-size: 1.1rem;
+      color: #6b7280;
+      margin-bottom: 40px;
+    }
+
+    /* Section where script renders content */
+    .testimonial-wrapper {
+      margin-top: 40px;
+    }
+    
+    .refresh-btn {
+      margin: 20px auto;
+      display: block;
+      padding: 10px 20px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background 0.3s;
+    }
+    
+    .refresh-btn:hover {
+      background: #2563eb;
+    }
+
+    footer {
+      margin-top: 60px;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>What Our Users Say</h1>
+    <p class="subtitle">
+      Real feedback from people who love our product
+    </p>
+
+    <!-- Manual refresh button -->
+    <button id="refresh-testimonials" class="refresh-btn" onclick="refreshTestimonials()">
+      🔄 Refresh Testimonials
+    </button>
+    
+    <!-- Script will display testimonials here -->
+    <div id="testimonial-container" class="testimonial-wrapper"></div>
+  </div>
+
+  <footer>
+    © 2026 Your Company Name. All rights reserved.
+  </footer>
+
+  <!-- ✅ Testimonial Script -->
+  <script 
+    src="https://testimonial-frontend-soz6.vercel.app/script.js" 
+    data-site-id="78aa25ae-fe26-441a-b709-31320479433b">
+  </script>
+  
+  <script>
+    // Store widget instance and prevent duplicate calls
+    let widgetInstance = null;
+    let isDisplaying = false;
+    let hasDisplayed = false;
+    
+    // Function to display testimonials (with duplicate prevention)
+    async function displayTestimonials() {
+      // Prevent multiple simultaneous calls
+      if (isDisplaying) {
+        console.log('⏳ Already displaying testimonials, skipping...');
+        return;
+      }
+      
+      isDisplaying = true;
+      
+      try {
+        // Wait for script to load and initialize
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Check if widget is available
+        if (!window.TestimonialWidget) {
+          console.warn('⚠️ TestimonialWidget not available yet. Retrying...');
+          isDisplaying = false;
+          setTimeout(displayTestimonials, 2000);
+          return;
+        }
+        
+        // Clear container first to prevent duplicates
+        const container = document.getElementById('testimonial-container');
+        if (container) {
+          container.innerHTML = ''; // Clear any existing content
+        }
+        
+        // Create or reuse widget instance
+        if (!widgetInstance) {
+          widgetInstance = new window.TestimonialWidget(
+            '78aa25ae-fe26-441a-b709-31320479433b',
+            'https://testimonial-frontend-soz6.vercel.app'
+          );
+        }
+        
+        // Display testimonials in the container
+        await widgetInstance.displayTestimonials('testimonial-container', {
+          layout: 'grid',      // Options: 'grid', 'list', or 'carousel'
+          limit: 6,            // Number of testimonials to show
+          showRating: true,    // Show star ratings
+          showAuthor: true     // Show author info
+        });
+        
+        hasDisplayed = true;
+        console.log('✅ Testimonials displayed successfully');
+      } catch (error) {
+        console.error('❌ Error displaying testimonials:', error);
+        const container = document.getElementById('testimonial-container');
+        if (container) {
+          container.innerHTML = '<p style="text-align: center; color: #ef4444;">Failed to load testimonials. Please try again later.</p>';
+        }
+      } finally {
+        isDisplaying = false;
+      }
+    }
+    
+    // Global function to manually refresh testimonials
+    async function refreshTestimonials() {
+      console.log('🔄 Manual refresh triggered');
+      hasDisplayed = false; // Reset flag to allow refresh
+      
+      const container = document.getElementById('testimonial-container');
+      if (container) {
+        container.innerHTML = '<p style="text-align: center; color: #6b7280;">Refreshing testimonials...</p>';
+      }
+      
+      // Re-display testimonials
+      await displayTestimonials();
+    }
+    
+    // Make function available globally
+    window.refreshTestimonials = refreshTestimonials;
+    
+    // Initialize testimonials when page loads (only once)
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        // Wait a bit for script to load, then display
+        setTimeout(displayTestimonials, 3000);
+      });
+    } else {
+      // DOM already loaded
+      setTimeout(displayTestimonials, 3000);
+    }
+    
+    // Also listen for window load (but only if not already displayed)
+    window.addEventListener('load', function() {
+      if (!hasDisplayed) {
+        setTimeout(displayTestimonials, 2000);
+      }
+    }, { once: true }); // Use 'once' to prevent multiple calls
+  </script>
+
+</body>
+</html>
