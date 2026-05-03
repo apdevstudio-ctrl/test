@@ -6,11 +6,9 @@
       "use": "@vercel/static"
     }
   ],
+{
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+    { "src": "/app-ads.txt", "dest": "/app-ads.txt" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
-
